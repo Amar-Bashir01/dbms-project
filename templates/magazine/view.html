@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+{% block title %}Magazine{% endblock %}
+
+{% block content %}
+    <h1>{{mag.title}}</h1><br>
+    {% if ismagAuthor %}
+        <button><a href="{{url_for('edit_magazine',id = mag.id)}}">Edit</a></button>
+        <button><a href="{{url_for('delete_magazine',id = mag.id)}}">Delete</a></button>
+    {% endif %}
+    <h2>{{mag.description}}</h2><br>
+    <p>{{mag.content|safe}}</p><br>
+{% endblock %}

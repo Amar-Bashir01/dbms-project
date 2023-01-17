@@ -65,6 +65,9 @@ CREATE TABLE `magazinesite`.`magazine` (
     ON DELETE CASCADE
     ON UPDATE CASCADE);
 
+ALTER TABLE `magazinesite`.`magazine` 
+ADD COLUMN `content` VARCHAR(1000) NULL AFTER `author_id`;
+
 
 CREATE TABLE `magazinesite`.`category` (
   `id` INT NOT NULL,

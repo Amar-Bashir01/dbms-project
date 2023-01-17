@@ -21,6 +21,7 @@ app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
 
+
 @app.route('/')
 def home():
     cur = mysql.connection.cursor()
@@ -112,6 +113,52 @@ def logout():
     session["type"]=None
     return redirect(url_for("home"))
 
+#---------------------------magazine ---------------------------
+@app.route('/magazine/add',methods = ["GET","POST"])
+def add_magazine():
+    cur = mysql.connection.cursor()
+    if session.get("type") != "author":
+        return redirect(url_for("login_author"))
+    if request.method == "POST":
+        title = request.form.get("title")
+        description = request.form.get("description")
+        content = request.form.get("editor1")
+        author_id = session.get("id")
+        cur.execute("insert into magazine(title,description,content,author_id) values(%s,%s,%s,%s)",(title,description,content,author_id))
+        mysql.connection.commit()
+        return redirect(url_for("home"))
+    return render_template("magazine/add.html")
+
+@app.route('/magazine/view/<int:id>',methods = ["GET"])
+def view_magazine(id):
+    cur = mysql.connection.cursor()
+    cur.execute(f"select * from magazine where id = {id}")
+    mag_data = cur.fetchone()
+    ismagAuthor = False
+    if session.get("type")=="author" and mag_data["author_id"]==session.get("id"):
+        ismagAuthor=True
+    return render_template("magazine/view.html",mag=mag_data,ismagAuthor=ismagAuthor)
+    
+@app.route('/magazine/edit/<int:id>',methods = ["GET","POST"])
+def edit_magazine(id):
+    cur = mysql.connection.cursor()
+    cur.execute(f"select * from magazine where id = {id}")
+    mag_data = cur.fetchone()
+    if request.method == "POST":
+        title = request.form.get("title")
+        description = request.form.get("description")
+        content = request.form.get("editor1")
+        cur.execute("update magazine set title =%s ,description=%s ,content=%s where id = %s",(title,description,content,id))
+        mysql.connection.commit()
+        return redirect(url_for("view_magazine",id = id))
+    return render_template("magazine/edit.html",mag = mag_data)
+
+@app.route('/magazine/delete/<int:id>',methods = ["GET"])
+def delete_magazine(id):
+    cur = mysql.connection.cursor()
+    cur.execute(f"delete from magazine where id = {id} ")
+    mysql.connection.commit()
+    return redirect(url_for("home"))
 
 
 
