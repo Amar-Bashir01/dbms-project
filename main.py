@@ -34,7 +34,9 @@ def home():
     elif id and type == "author":
         cur.execute(f"Select * from author where id = {id}")
         data = cur.fetchone()
-    return render_template("index.html",data = data,type=type)
+    cur.execute("select * from magazine")
+    mag_data = cur.fetchall()
+    return render_template("index.html",data = data,type=type,mag_data = mag_data)
 
 
 # ---------------------------AUTHENTICATION ---------------------------
@@ -44,7 +46,8 @@ def login_user():
     if request.method == "POST":
         email = request.form.get("email")
         password = request.form.get("password")
-        cur.execute(f"select * from login where email_id = '{email}'")
+        type = 'user'
+        cur.execute(f"select * from login where email_id = '{email}' and type = '{type}'")
         user = cur.fetchone()
         if user and user["password"] == password:
             cur.execute(f"select id from user where email = '{email}'")
@@ -62,7 +65,8 @@ def login_author():
     if request.method == "POST":
         email = request.form.get("email")
         password = request.form.get("password")
-        cur.execute(f"select * from login where email_id = '{email}'")
+        type = 'author'
+        cur.execute(f"select * from login where email_id = '{email}' and type = '{type}'")
         author = cur.fetchone()
         if author and author["password"] == password:
             cur.execute(f"select id from author where email = '{email}'")
@@ -70,8 +74,10 @@ def login_author():
             session["id"] = author_id["id"] 
             session["type"] = "author"
             return redirect(url_for("home"))
-        else:
+        elif author:
             flash("Wrong password")
+        else:
+            flash("No author with that email")
     return render_template("auth/loginAuthor.html")
 
 
@@ -123,11 +129,14 @@ def add_magazine():
         title = request.form.get("title")
         description = request.form.get("description")
         content = request.form.get("editor1")
+        cat_id = request.form.get("category")
         author_id = session.get("id")
-        cur.execute("insert into magazine(title,description,content,author_id) values(%s,%s,%s,%s)",(title,description,content,author_id))
+        cur.execute("insert into magazine(title,description,content,author_id,cat_id) values(%s,%s,%s,%s,%s)",(title,description,content,author_id,cat_id))
         mysql.connection.commit()
         return redirect(url_for("home"))
-    return render_template("magazine/add.html")
+    cur.execute("Select * from category")
+    cat_data = cur.fetchall()
+    return render_template("magazine/add.html",cat_data=cat_data)
 
 @app.route('/magazine/view/<int:id>',methods = ["GET"])
 def view_magazine(id):
@@ -137,7 +146,11 @@ def view_magazine(id):
     ismagAuthor = False
     if session.get("type")=="author" and mag_data["author_id"]==session.get("id"):
         ismagAuthor=True
-    return render_template("magazine/view.html",mag=mag_data,ismagAuthor=ismagAuthor)
+    cur.execute(f"select * from comment where mag_id = {id} ")
+    comment_data = cur.fetchall()
+    type = session.get("type")
+    id =  session.get("id")
+    return render_template("magazine/view.html",mag=mag_data,ismagAuthor=ismagAuthor, comment_data=comment_data, type = type,id = id)
     
 @app.route('/magazine/edit/<int:id>',methods = ["GET","POST"])
 def edit_magazine(id):
@@ -151,7 +164,9 @@ def edit_magazine(id):
         cur.execute("update magazine set title =%s ,description=%s ,content=%s where id = %s",(title,description,content,id))
         mysql.connection.commit()
         return redirect(url_for("view_magazine",id = id))
-    return render_template("magazine/edit.html",mag = mag_data)
+    cur.execute("Select * from category")
+    cat_data = cur.fetchall()
+    return render_template("magazine/edit.html",mag = mag_data,cat_data=cat_data)
 
 @app.route('/magazine/delete/<int:id>',methods = ["GET"])
 def delete_magazine(id):
@@ -160,7 +175,53 @@ def delete_magazine(id):
     mysql.connection.commit()
     return redirect(url_for("home"))
 
+#---------------------Filter by category----------------
 
+@app.route('/category/<int:id>',methods = ["GET","POST"])
+def filter_category(id):
+    cur = mysql.connection.cursor()
+    if request.method == "POST":
+        cat_id = request.form.get("category")
+        return redirect(url_for("filter_category",id = cat_id))
+    cur.execute("Select * from category")
+    cat_data = cur.fetchall()
+    cur.execute(f"select * from magazine,category where magazine.cat_id = category.id and category.id = {id}")
+    filter_mag = cur.fetchall()
+    return render_template("magazine/category.html",filter_mag=filter_mag,cat_data = cat_data,id = id)
+    
+
+# -------------Comment------------
+@app.route('/magazine/<int:id>/comment/add',methods = ["GET","POST"])
+def add_comment(id):
+    cur = mysql.connection.cursor()
+    if request.method == "POST":
+        title = request.form.get("title")
+        content = request.form.get("content")
+        user_id = session.get("id")
+        cur.execute("Insert into comment(title,content,user_id,mag_id) values (%s,%s,%s,%s) ",(title,content,user_id,id))
+        mysql.connection.commit()
+        return redirect(url_for("view_magazine",id = id))
+    return render_template("comment/add.html",id = id)
+
+@app.route('/magazine/<int:mag_id>/comment/edit/<int:id>',methods = ["GET","POST"])
+def edit_comment(mag_id,id):
+    cur = mysql.connection.cursor()
+    if request.method == "POST":
+        title = request.form.get("title")
+        content = request.form.get("content")
+        cur.execute("Update comment set title = %s, content = %s where id = %s",(title,content,id))
+        mysql.connection.commit()
+        return redirect(url_for("view_magazine",id = mag_id))
+    cur.execute(f"select * from comment where id = {id}")
+    comment = cur.fetchone()
+    return render_template("comment/edit.html",comment=comment,mag_id = mag_id,id = id)
+
+@app.route('/magazine/<int:mag_id>/comment/delete/<int:id>')
+def delete_comment(mag_id,id):
+    cur = mysql.connection.cursor()
+    cur.execute(f"delete from comment where id = {id} ")
+    mysql.connection.commit()
+    return redirect(url_for("view_magazine",id = mag_id))
 
 if __name__ == "__main__":
     app.run(debug=True)

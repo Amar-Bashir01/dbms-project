@@ -16,4 +16,10 @@
     <button><a href="{{url_for('register_user')}}">User register</a></button>
     <button><a href="{{url_for('register_author')}}">Author register</a></button>
     {% endif %}
+    <button><a href="{{url_for('filter_category',id=1)}}">Category</a></button>
+    {% for mag in mag_data %}
+        <h2>Title: <a href="{{url_for('view_magazine',id = mag.id)}}">{{mag.title}}</a> </h2>
+        <h3>Desc:{{mag.description}}</h3>
+        <p>Likes: {{mag.number_of_likes}}</p>
+    {% endfor %}
 {% endblock %}
