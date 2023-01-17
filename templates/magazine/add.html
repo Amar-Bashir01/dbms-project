@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+{% block title %}Add magazine{% endblock %}
+
+{% block content %}
+    <h1>Add magazine</h1>
+    <form method="POST" action="/magazine/add" >
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        {% for message in messages: %}
+            <p class=flashes>
+                {{ message }}
+            </p>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+        <label for="title">title: </label>
+        <input type="text" name="title" id="title">
+        <label for="category">Category</label>
+        <select name="category" id="category">
+            {% for cat in cat_data %}
+            <option value="{{cat.id}}">{{cat.type}}</option>
+            {% endfor %}
+        </select>
+        
+        <label for="description">description: </label>
+        <input type="text" name="description" id="description"><br>
+        <label for="content">content: </label><br>
+        <textarea name="editor1" id = "content"></textarea>
+
+        <button type="submit">Add Magazine </button>
+    </form>
+{% endblock %}

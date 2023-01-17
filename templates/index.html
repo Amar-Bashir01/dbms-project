@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block title %}Magazine Site{% endblock %}
+
+{% block content %}
+    {% if data %}
+    <h1>{{data.name}} Logged in</h1>
+    {% if type %}
+        <p>Type: {{type}}</p>
+    {% endif %}
+    <button><a href="{{url_for('logout')}}">Logout</a></button>
+    {% else %}
+    <h1>Anonymous</h1>
+    <button><a href="{{url_for('login_user')}}">User login</a></button>
+    <button><a href="{{url_for('login_author')}}">Author login</a></button>
+    <button><a href="{{url_for('register_user')}}">User register</a></button>
+    <button><a href="{{url_for('register_author')}}">Author register</a></button>
+    {% endif %}
+    <button><a href="{{url_for('filter_category',id=1)}}">Category</a></button>
+    {% for mag in mag_data %}
+        <h2>Title: <a href="{{url_for('view_magazine',id = mag.id)}}">{{mag.title}}</a> </h2>
+        <h3>Desc:{{mag.description}}</h3>
+        <p>Likes: {{mag.number_of_likes}}</p>
+    {% endfor %}
+{% endblock %}

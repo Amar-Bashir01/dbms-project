@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block title %}edit comment{% endblock %}
+
+{% block content %}
+    <h1>edit comment</h1>
+    <form method="POST" action="{{url_for('edit_comment',id = id,mag_id = mag_id)}}" >
+        {% with messages = get_flashed_messages() %}
+        {% if messages %}
+        {% for message in messages: %}
+            <p class=flashes>
+                {{ message }}
+            </p>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+        <label for="title">title: </label>
+        <input type="text" name="title" id="title" value="{{comment.title}}">
+        
+        <label for="content">content: </label>
+        <input type="text" name="content" id="content" value="{{comment.content}}"><br>
+    
+        <button type="submit">edit comment </button>
+    </form>
+{% endblock %}
