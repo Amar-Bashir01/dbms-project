@@ -5,8 +5,8 @@ from flask_mysqldb import MySQL
 app = Flask(__name__)
 
 # Configuration settings
-app.config['MYSQL_USER'] = 'ng169'
-app.config['MYSQL_PASSWORD'] = 'test123'
+app.config['MYSQL_USER'] = 'root'
+app.config['MYSQL_PASSWORD'] = 'amarbhat'
 app.config['MYSQL_HOST'] = 'localhost'
 app.config['MYSQL_DB'] = 'magazinesite'
 app.config['MYSQL_CURSORCLASS'] = 'DictCursor'
@@ -21,7 +21,7 @@ app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
 
-
+#added by amar
 @app.route('/')
 def home():
     cur = mysql.connection.cursor()
