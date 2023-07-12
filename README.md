@@ -1,4 +1,3 @@
 # dbms-project
 Backend by ng169
-frontend by amar
-blah
+frontend by amar and Amaan
